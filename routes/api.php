@@ -8,7 +8,8 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-// Rutas públicas para poemas (CORS se maneja por config/cors.php globalmente)
-Route::apiResource('poems', PoemController::class);
+// Rutas protegidas para la gestión de poemas del usuario
+Route::apiResource('poems', PoemController::class)->middleware('auth:sanctum');
 
+// Ruta pública para estadísticas globales
 Route::get('poems/stats', [PoemController::class, 'stats']);
