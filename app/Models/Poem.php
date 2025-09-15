@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Poem extends Model
 {
@@ -16,5 +17,14 @@ class Poem extends Model
         'content',
         'author',
         'color',
+        'user_id',
     ];
+
+    /**
+     * Get the user that owns the poem.
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 }

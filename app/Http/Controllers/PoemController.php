@@ -34,7 +34,23 @@ class PoemController extends Controller
         $perPage = $request->get('per_page', 10);
         $poems = $query->latest()->paginate($perPage);
 
-        return response()->json($poems);
+        // Si es una petición API, devolver JSON
+        if ($request->expectsJson() || $request->is('api/*')) {
+            return response()->json($poems);
+        }
+
+        // Si es una petición web de Inertia, devolver la vista
+        return inertia('Poems/Index', [
+            'poems' => $poems->items(),
+            'pagination' => [
+                'current_page' => $poems->currentPage(),
+                'last_page' => $poems->lastPage(),
+                'per_page' => $poems->perPage(),
+                'total' => $poems->total(),
+                'from' => $poems->firstItem(),
+                'to' => $poems->lastItem(),
+            ]
+        ]);
     }
 
     /**
@@ -58,12 +74,38 @@ class PoemController extends Controller
     }
 
     /**
+     * Get public poems for the React frontend.
+     */
+    public function publicPoems(Request $request)
+    {
+        $query = Poem::query();
+
+        // Search by title or author
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('author', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by color
+        if ($request->has('color') && !empty($request->color)) {
+            $query->where('color', $request->color);
+        }
+
+        // Get all poems (no pagination for React frontend)
+        $poems = $query->latest()->get();
+
+        return response()->json($poems);
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
     public function create()
     {
-        // Not necessary for an API
-        return abort(404);
+        return inertia('Poems/Create');
     }
 
     /**
@@ -73,7 +115,13 @@ class PoemController extends Controller
     {
         $poem = $request->user()->poems()->create($request->validated());
 
-        return response()->json($poem, 201);
+        // Si es una petición API, devolver JSON
+        if ($request->expectsJson() || $request->is('api/*')) {
+            return response()->json($poem, 201);
+        }
+
+        // Si es una petición web de Inertia, redirigir
+        return redirect()->route('poems.index')->with('success', 'Poema creado exitosamente.');
     }
 
     /**
@@ -85,16 +133,29 @@ class PoemController extends Controller
             abort(403);
         }
 
-        return response()->json($poem);
+        // Si es una petición API, devolver JSON
+        if ($request->expectsJson() || $request->is('api/*')) {
+            return response()->json($poem);
+        }
+
+        // Si es una petición web de Inertia, devolver la vista
+        return inertia('Poems/Show', [
+            'poem' => $poem
+        ]);
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Poem $poem)
+    public function edit(Poem $poem, Request $request)
     {
-        // Not necessary for an API
-        return abort(404);
+        if ($poem->user_id !== $request->user()->id) {
+            abort(403);
+        }
+
+        return inertia('Poems/Edit', [
+            'poem' => $poem
+        ]);
     }
 
     /**
@@ -108,7 +169,13 @@ class PoemController extends Controller
 
         $poem->update($request->validated());
 
-        return response()->json($poem);
+        // Si es una petición API, devolver JSON
+        if ($request->expectsJson() || $request->is('api/*')) {
+            return response()->json($poem);
+        }
+
+        // Si es una petición web de Inertia, redirigir
+        return redirect()->route('poems.index')->with('success', 'Poema actualizado exitosamente.');
     }
 
     /**
@@ -122,6 +189,12 @@ class PoemController extends Controller
 
         $poem->delete();
 
-        return response()->json(null, 204);
+        // Si es una petición API, devolver JSON
+        if ($request->expectsJson() || $request->is('api/*')) {
+            return response()->json(null, 204);
+        }
+
+        // Si es una petición web de Inertia, redirigir
+        return redirect()->route('poems.index')->with('success', 'Poema eliminado exitosamente.');
     }
 }
