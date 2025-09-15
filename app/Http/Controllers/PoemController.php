@@ -3,75 +3,68 @@
 namespace App\Http\Controllers;
 
 use App\Models\Poem;
-use Illuminate\Http\Request;
+use App\Http\Requests\StorePoemRequest;
+use App\Http\Requests\UpdatePoemRequest;
+use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class PoemController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(): Response
     {
-        $poems = Poem::all();
-        return response()->json($poems);
+        return Inertia::render('Poems/Index', [
+            'poems' => Auth::user()->poems()->latest()->get(),
+        ]);
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(): Response
     {
-        // No necesario para API
-        return abort(404);
+        return Inertia::render('Poems/Create');
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StorePoemRequest $request)
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'content' => 'required|string',
-            'author' => 'required|string|max:255',
-            'color' => 'required|string|max:50',
-        ]);
+        Auth::user()->poems()->create($request->validated());
 
-        $poem = Poem::create($validated);
-        return response()->json($poem, 201);
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Poem $poem)
-    {
-        return response()->json($poem);
+        return redirect()->route('poems.index')->with('success', 'Poem created successfully.');
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Poem $poem)
+    public function edit(Poem $poem): Response
     {
-        // No necesario para API
-        return abort(404);
+        if ($poem->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        return Inertia::render('Poems/Edit', [
+            'poem' => $poem,
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Poem $poem)
+    public function update(UpdatePoemRequest $request, Poem $poem)
     {
-        $validated = $request->validate([
-            'title' => 'sometimes|required|string|max:255',
-            'content' => 'sometimes|required|string',
-            'author' => 'sometimes|required|string|max:255',
-            'color' => 'sometimes|required|string|max:50',
-        ]);
+        if ($poem->user_id !== Auth::id()) {
+            abort(403);
+        }
 
-        $poem->update($validated);
-        return response()->json($poem);
+        $poem->update($request->validated());
+
+        return redirect()->route('poems.index')->with('success', 'Poem updated successfully.');
     }
 
     /**
@@ -79,7 +72,12 @@ class PoemController extends Controller
      */
     public function destroy(Poem $poem)
     {
+        if ($poem->user_id !== Auth::id()) {
+            abort(403);
+        }
+
         $poem->delete();
-        return response()->json(null, 204);
+
+        return redirect()->route('poems.index')->with('success', 'Poem deleted successfully.');
     }
 }

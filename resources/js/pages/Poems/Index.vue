@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import Heading from '@/components/Heading.vue';
 import { route } from 'ziggy-js';
@@ -12,55 +11,17 @@ interface Poem {
   color: string;
 }
 
-const poems = ref<Poem[]>([]);
-const loading = ref(true);
-const error = ref<string | null>(null);
+defineProps<{
+  poems: Poem[];
+}>();
 
-const fetchPoems = async () => {
-  try {
-    loading.value = true;
-    const response = await fetch('/api/poems');
-    if (!response.ok) {
-      throw new Error('Error al cargar los poemas');
-    }
-    poems.value = (await response.json()) as Poem[];
-  } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Error desconocido al cargar los poemas';
-  } finally {
-    loading.value = false;
-  }
-};
-
-const deletePoem = async (id: number) => {
-  if (!confirm('¿Estás seguro de que deseas eliminar este poema?')) {
-    return;
-  }
-  
-  try {
-    const csrf = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement | null)?.getAttribute('content') ?? '';
-    const response = await fetch(`/api/poems/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': csrf,
-      } as Record<string, string>,
-    
+const deletePoem = (id: number) => {
+  if (confirm('¿Estás seguro de que deseas eliminar este poema?')) {
+    router.delete(route('poems.destroy', id), {
+      preserveScroll: true,
     });
-    
-    if (!response.ok) {
-      throw new Error('Error al eliminar el poema');
-    }
-    
-    // Actualizar la lista de poemas
-    poems.value = poems.value.filter((poem) => poem.id !== id);
-  } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Error desconocido al eliminar el poema';
   }
 };
-
-onMounted(() => {
-  fetchPoems();
-});
 </script>
 
 <template>
@@ -80,21 +41,11 @@ onMounted(() => {
                 Crear Nuevo Poema
               </Link>
             </div>
-            
-            <div v-if="loading" class="text-center py-4">
-              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
-              <p class="mt-2 text-gray-600 dark:text-gray-400">Cargando poemas...</p>
-            </div>
-            
-            <div v-else-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-              <strong class="font-bold">Error:</strong>
-              <span class="block sm:inline">{{ error }}</span>
-            </div>
-            
-            <div v-else-if="poems.length === 0" class="text-center py-4">
+
+            <div v-if="poems.length === 0" class="text-center py-4">
               <p class="text-gray-600 dark:text-gray-400">No hay poemas disponibles. ¡Crea uno nuevo!</p>
             </div>
-            
+
             <div v-else class="overflow-x-auto">
               <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead class="bg-gray-50 dark:bg-gray-700">
@@ -137,6 +88,7 @@ onMounted(() => {
                 </tbody>
               </table>
             </div>
+
           </div>
         </div>
       </div>

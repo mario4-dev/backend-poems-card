@@ -10,3 +10,5 @@ Route::get('/user', function (Request $request) {
 
 // Rutas públicas para poemas (CORS se maneja por config/cors.php globalmente)
 Route::apiResource('poems', PoemController::class);
+
+Route::get('poems/stats', [PoemController::class, 'stats']);
