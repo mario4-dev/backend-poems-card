@@ -15,6 +15,13 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+    // Helpful env hints (no runtime effect unless .env is set)
+    // FRONTEND_URL=https://app.mypoemsoul.me
+    // SANCTUM_STATEFUL_DOMAINS=app.mypoemsoul.me,admin.mypoemsoul.me
+    // SESSION_DOMAIN=.mypoemsoul.me
+    // SESSION_SECURE_COOKIE=true
+    // SESSION_SAME_SITE=none
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment

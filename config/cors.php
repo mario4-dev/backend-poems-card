@@ -14,11 +14,14 @@ return [
     |
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'paths' => ['api/*', 'sanctum/csrf-cookie', 'login', 'logout', 'register', 'forgot-password', 'reset-password/*'],
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
+    // Frontend SPA domains permitted
+    'allowed_origins' => [
+        env('FRONTEND_URL', 'https://app.mypoemsoul.me'),
+    ],
 
     'allowed_origins_patterns' => [],
 
@@ -28,5 +31,6 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => false,
+    // Required to send cookies across origins
+    'supports_credentials' => true,
 ];
