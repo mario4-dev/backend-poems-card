@@ -21,6 +21,7 @@ return [
     // Frontend SPA domains permitted
     'allowed_origins' => [
         env('FRONTEND_URL', 'https://app.mypoemsoul.me'),
+        'http://localhost:3000',
     ],
 
     'allowed_origins_patterns' => [],
