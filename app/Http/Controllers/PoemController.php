@@ -113,7 +113,10 @@ class PoemController extends Controller
      */
     public function store(StorePoemRequest $request)
     {
-        $poem = $request->user()->poems()->create($request->validated());
+        $validatedData = $request->validated();
+        $validatedData['published'] = true; // Marcar como publicado automáticamente
+
+        $poem = $request->user()->poems()->create($validatedData);
 
         // Si es una petición API, devolver JSON
         if ($request->expectsJson() || $request->is('api/*')) {
