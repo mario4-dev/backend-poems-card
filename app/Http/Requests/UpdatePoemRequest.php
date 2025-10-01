@@ -26,6 +26,7 @@ class UpdatePoemRequest extends FormRequest
             'content' => 'sometimes|required|string|min:10|max:5000',
             'author' => 'sometimes|required|string|max:255|min:2',
             'color' => 'sometimes|required|string|regex:/^#[a-fA-F0-9]{6}$/',
+            'published' => 'sometimes|boolean',
         ];
     }
 

@@ -18,6 +18,7 @@ class Poem extends Model
         'author',
         'color',
         'user_id',
+        'published',
     ];
 
     /**

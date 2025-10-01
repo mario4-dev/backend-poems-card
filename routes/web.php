@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Poem;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\PoemController;
@@ -9,7 +10,9 @@ Route::get('/', function () {
 })->name('home');
 
 Route::get('dashboard', function () {
-    return Inertia::render('Dashboard');
+    return Inertia::render('Dashboard', [
+        'poemCount' => Poem::where('published', true)->count(),
+    ]);
 })->middleware(['auth'])->name('dashboard');
 
 // Rutas web para Inertia.js - Gestión de poemas

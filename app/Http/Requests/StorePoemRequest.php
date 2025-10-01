@@ -26,6 +26,7 @@ class StorePoemRequest extends FormRequest
             'content' => 'required|string|min:10|max:5000',
             'author' => 'required|string|max:255|min:2',
             'color' => 'required|string|regex:/^#[a-fA-F0-9]{6}$/',
+            'published' => 'sometimes|boolean',
         ];
     }
 

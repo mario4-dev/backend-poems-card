@@ -58,9 +58,9 @@ class PoemController extends Controller
      */
     public function stats()
     {
-        $totalPoems = Poem::count();
-        $uniqueAuthors = Poem::distinct('author')->count('author');
-        $colors = Poem::select('color')
+        $totalPoems = Poem::where('published', true)->count();
+        $uniqueAuthors = Poem::where('published', true)->distinct('author')->count('author');
+        $colors = Poem::where('published', true)->select('color')
             ->selectRaw('count(*) as count')
             ->groupBy('color')
             ->get()
@@ -78,7 +78,7 @@ class PoemController extends Controller
      */
     public function publicPoems(Request $request)
     {
-        $query = Poem::query();
+        $query = Poem::where('published', true);
 
         // Search by title or author
         if ($request->has('search') && !empty($request->search)) {
